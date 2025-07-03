@@ -1,0 +1,33 @@
+# Core AutoGen and AI dependencies
+autogen-agentchat
+groq
+python-dotenv
+
+# Document processing
+PyPDF2
+python-docx
+openpyxl
+pandas
+
+# Vector database for knowledge base
+chromadb
+
+# Web UI
+streamlit
+streamlit-chat
+
+# HTTP client for MCP integration
+httpx
+
+# MCP Server dependencies
+model-context-protocol
+fastapi
+uvicorn
+pydantic
+
+# Additional utilities
+pathlib
+datetime
+hashlib
+typing
+asyncio

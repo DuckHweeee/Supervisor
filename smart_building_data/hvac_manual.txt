@@ -1,0 +1,52 @@
+SMART BUILDING HVAC SYSTEM MANUAL
+
+System Overview:
+The smart building is equipped with an advanced HVAC (Heating, Ventilation, and Air Conditioning) system that includes:
+- Centralized control system with IoT sensors
+- Automated temperature regulation
+- Energy-efficient heat pumps
+- Zone-based climate control
+- Air quality monitoring
+
+Key Components:
+1. Main Control Unit (MCU-2024)
+   - Location: Mechanical Room B1
+   - IP Address: 192.168.1.100
+   - Manages overall system operations
+
+2. Temperature Sensors (TS-101 to TS-150)
+   - Distributed throughout all floors
+   - Wireless connectivity via ZigBee protocol
+   - Battery life: 2-3 years
+
+3. Air Quality Sensors (AQ-201 to AQ-220)
+   - Monitors CO2, humidity, and particulate matter
+   - Real-time data transmission to MCU
+   - Calibration required every 6 months
+
+4. Smart Thermostats (ST-301 to ST-350)
+   - Touchscreen interface in each zone
+   - Mobile app connectivity
+   - Learning algorithm for occupancy patterns
+
+Operating Parameters:
+- Normal temperature range: 68°F - 76°F (20°C - 24°C)
+- Humidity target: 40% - 60%
+- CO2 levels: <1000 ppm
+- System operational hours: 24/7 with efficiency scheduling
+
+Maintenance Schedule:
+- Filter replacement: Every 3 months
+- Sensor calibration: Every 6 months
+- System inspection: Annually
+- Software updates: Quarterly
+
+Troubleshooting:
+- High energy consumption: Check for blocked vents, dirty filters
+- Inconsistent temperatures: Verify sensor placement and calibration
+- System not responding: Check network connectivity and power supply
+
+Emergency Contacts:
+- Building Engineer: (555) 123-4567
+- HVAC Contractor: (555) 987-6543
+- Emergency Maintenance: (555) 111-2222

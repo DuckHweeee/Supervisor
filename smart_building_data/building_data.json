@@ -1,0 +1,932 @@
+{
+  "smartBuildingData": {
+    "buildingInfo": {
+      "name": "Đại học quốc tế Miền Đông",
+      "location": {
+        "coordinates": "11.052754371982356, 106.666777616965",
+        "address": "Ho Chi Minh City, Vietnam"
+      },
+      "totalFloors": 4,
+      "totalRooms": 85,
+      "buildingType": "Educational"
+    },
+    "equipment": [
+      {
+        "id": 1,
+        "header": "Smart Light Panel",
+        "equipmentName": "Smart Light Panel",
+        "type": "Lighting",
+        "status": "Active",
+        "target": "2023-12-15",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 2,
+        "header": "Smart Thermostat",
+        "equipmentName": "Smart Thermostat",
+        "type": "HVAC",
+        "status": "Active",
+        "target": "2023-11-20",
+        "limit": "N/A",
+        "reviewer": "Tran Minh En"
+      },
+      {
+        "id": 3,
+        "header": "Air Quality Monitor",
+        "equipmentName": "Air Quality Monitor",
+        "type": "Environmental",
+        "status": "Offline",
+        "target": "2024-01-10",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 4,
+        "header": "Smart Power Plug",
+        "equipmentName": "Smart Power Plug",
+        "type": "Energy",
+        "status": "Active",
+        "target": "2024-02-05",
+        "limit": "N/A",
+        "reviewer": "Trieu Dinh Dang Pha"
+      },
+      {
+        "id": 5,
+        "header": "Motion Detector",
+        "equipmentName": "Motion Detector",
+        "type": "Security",
+        "status": "Active",
+        "target": "2024-02-15",
+        "limit": "N/A",
+        "reviewer": "Tran Minh En"
+      },
+      {
+        "id": 6,
+        "header": "Water Leak Sensor",
+        "equipmentName": "Water Leak Sensor",
+        "type": "Environmental",
+        "status": "Maintenance",
+        "target": "2024-01-25",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 7,
+        "header": "Smart Door Lock",
+        "equipmentName": "Smart Door Lock",
+        "type": "Security",
+        "status": "Active",
+        "target": "2023-12-30",
+        "limit": "N/A",
+        "reviewer": "Trieu Dinh Dang Pha"
+      },
+      {
+        "id": 8,
+        "header": "Smart Blinds Controller",
+        "equipmentName": "Smart Blinds Controller",
+        "type": "Automation",
+        "status": "Active",
+        "target": "2024-03-05",
+        "limit": "N/A",
+        "reviewer": "Tran Minh En"
+      },
+      {
+        "id": 9,
+        "header": "Energy Meter",
+        "equipmentName": "Energy Meter",
+        "type": "Energy",
+        "status": "Offline",
+        "target": "2023-11-10",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 10,
+        "header": "Indoor Camera",
+        "equipmentName": "Indoor Camera",
+        "type": "Security",
+        "status": "Active",
+        "target": "2024-01-15",
+        "limit": "N/A",
+        "reviewer": "Trieu Dinh Dang Pha"
+      },
+      {
+        "id": 11,
+        "header": "CO2 Detector",
+        "equipmentName": "CO2 Detector",
+        "type": "Safety",
+        "status": "Active",
+        "target": "2024-02-28",
+        "limit": "N/A",
+        "reviewer": "Tran Minh En"
+      },
+      {
+        "id": 12,
+        "header": "Smoke Detector Room 1",
+        "equipmentName": "Smoke Detector",
+        "type": "Safety",
+        "status": "Maintenance",
+        "target": "2023-12-20",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 13,
+        "header": "Smoke Detector Room 2",
+        "equipmentName": "Smoke Detector",
+        "type": "Safety",
+        "status": "Active",
+        "target": "2023-12-20",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      },
+      {
+        "id": 14,
+        "header": "Smoke Detector Room 3",
+        "equipmentName": "Smoke Detector",
+        "type": "Safety",
+        "status": "Offline",
+        "target": "2023-12-20",
+        "limit": "N/A",
+        "reviewer": "Nguyen Quang Zn"
+      }
+    ],
+    "materialTypes": [
+      {
+        "typeId": 1,
+        "header": "Single Chair",
+        "materialTypeName": "Single Chair",
+        "maxQuantity": 30,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 1,
+            "name": "ADGJ1346",
+            "installDate": "2024-09-17",
+            "technician": "Tran Minh En"
+          },
+          {
+            "materialId": 2,
+            "name": "ZCBM4679",
+            "installDate": "2024-09-17",
+            "technician": "Tran Minh En"
+          },
+          {
+            "materialId": 3,
+            "name": "QETU7913",
+            "installDate": "2024-09-17",
+            "technician": "Tran Minh En"
+          },
+          {
+            "materialId": 4,
+            "name": "QAZW7418",
+            "installDate": "2024-09-17",
+            "technician": "Tran Minh En"
+          },
+          {
+            "materialId": 5,
+            "name": "SXED5296",
+            "installDate": "2024-09-17",
+            "technician": "Tran Minh En"
+          }
+        ]
+      },
+      {
+        "typeId": 2,
+        "header": "Double Table",
+        "materialTypeName": "Double Table",
+        "maxQuantity": 15,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 6,
+            "name": "PIYR9874",
+            "installDate": "2024-09-17",
+            "technician": "Nguyen Quang Zn"
+          },
+          {
+            "materialId": 7,
+            "name": "LJGD5632",
+            "installDate": "2024-09-17",
+            "technician": "Nguyen Quang Zn"
+          },
+          {
+            "materialId": 8,
+            "name": "MBCZ1098",
+            "installDate": "2024-09-17",
+            "technician": "Nguyen Quang Zn"
+          }
+        ]
+      },
+      {
+        "typeId": 4,
+        "header": "PC",
+        "materialTypeName": "PC",
+        "maxQuantity": 1,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 10,
+            "name": "PQMZ7913",
+            "installDate": "2024-09-19",
+            "technician": "Trieu Dinh Dang Pha"
+          }
+        ]
+      },
+      {
+        "typeId": 5,
+        "header": "TV",
+        "materialTypeName": "TV",
+        "maxQuantity": 1,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 11,
+            "name": "GHNV0460",
+            "installDate": "2024-09-19",
+            "technician": "Trieu Dinh Dang Pha"
+          }
+        ]
+      },
+      {
+        "typeId": 6,
+        "header": "White Board",
+        "materialTypeName": "White Board",
+        "maxQuantity": 2,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 12,
+            "name": "IEMC9769",
+            "installDate": "2024-09-16",
+            "technician": "Tran Minh En"
+          },
+          {
+            "materialId": 9,
+            "name": "QWES1234",
+            "installDate": "2024-09-16",
+            "technician": "Tran Minh En"
+          }
+        ]
+      },
+      {
+        "typeId": 7,
+        "header": "Speakers",
+        "materialTypeName": "Speakers",
+        "maxQuantity": 3,
+        "scale": "Units",
+        "materials": [
+          {
+            "materialId": 13,
+            "name": "PLOK9685",
+            "installDate": "2024-09-18",
+            "technician": "Trieu Dinh Dang Pha"
+          },
+          {
+            "materialId": 14,
+            "name": "IJUH8574",
+            "installDate": "2024-09-18",
+            "technician": "Trieu Dinh Dang Pha"
+          },
+          {
+            "materialId": 15,
+            "name": "YGTF7463",
+            "installDate": "2024-09-18",
+            "technician": "Trieu Dinh Dang Pha"
+          }
+        ]
+      }
+    ],
+    "rooms": [
+      {
+        "roomId": "8741dea6-b59b-49d1-b9a5-bd0fb8434860",
+        "roomNumber": "201",
+        "floor": 2,
+        "capacity": 62,
+        "roomType": "Classroom",
+        "materials": [
+          {
+            "materialTypeId": 2,
+            "materialTypeName": "Double Table",
+            "quantity": 31,
+            "description": "31 bàn đôi"
+          },
+          {
+            "materialTypeId": 5,
+            "materialTypeName": "TV",
+            "quantity": 1,
+            "description": "1 TV"
+          },
+          {
+            "materialTypeId": 6,
+            "materialTypeName": "White Board",
+            "quantity": 2,
+            "description": "2 bảng"
+          },
+          {
+            "materialTypeId": 7,
+            "materialTypeName": "Speakers",
+            "quantity": 3,
+            "description": "3 loa"
+          },
+          {
+            "materialTypeId": 4,
+            "materialTypeName": "PC",
+            "quantity": 1,
+            "description": "1 máy tính"
+          }
+        ]
+      },
+      {
+        "roomId": "1fe98604-8a30-4068-a1ba-30bacf9dcf69",
+        "roomNumber": "202",
+        "floor": 2,
+        "capacity": 32,
+        "roomType": "Classroom",
+        "materials": [
+          {
+            "materialTypeId": 1,
+            "materialTypeName": "Single Chair",
+            "quantity": 30,
+            "description": "30 bàn đơn"
+          },
+          {
+            "materialTypeId": 2,
+            "materialTypeName": "Double Table",
+            "quantity": 1,
+            "description": "1 bàn đôi"
+          },
+          {
+            "materialTypeId": 5,
+            "materialTypeName": "TV",
+            "quantity": 1,
+            "description": "1 TV"
+          },
+          {
+            "materialTypeId": 6,
+            "materialTypeName": "White Board",
+            "quantity": 2,
+            "description": "2 bảng"
+          },
+          {
+            "materialTypeId": 7,
+            "materialTypeName": "Speakers",
+            "quantity": 3,
+            "description": "3 loa"
+          },
+          {
+            "materialTypeId": 4,
+            "materialTypeName": "PC",
+            "quantity": 1,
+            "description": "1 máy tính"
+          }
+        ]
+      },
+      {
+        "roomId": "64e86383-d358-490d-84ed-f03964aaa0cd",
+        "roomNumber": "203",
+        "floor": 2,
+        "capacity": 62,
+        "roomType": "Classroom",
+        "materials": [
+          {
+            "materialTypeId": 2,
+            "materialTypeName": "Double Table",
+            "quantity": 31,
+            "description": "31 bàn đôi"
+          },
+          {
+            "materialTypeId": 5,
+            "materialTypeName": "TV",
+            "quantity": 1,
+            "description": "1 TV"
+          },
+          {
+            "materialTypeId": 6,
+            "materialTypeName": "White Board",
+            "quantity": 2,
+            "description": "2 bảng"
+          },
+          {
+            "materialTypeId": 7,
+            "materialTypeName": "Speakers",
+            "quantity": 3,
+            "description": "3 loa"
+          },
+          {
+            "materialTypeId": 4,
+            "materialTypeName": "PC",
+            "quantity": 1,
+            "description": "1 máy tính"
+          }
+        ]
+      },
+      {
+        "roomId": "484cf1ea-b448-44c0-ac1d-5c55b0f3b04c",
+        "roomNumber": "204",
+        "floor": 2,
+        "capacity": 32,
+        "roomType": "Classroom",
+        "materials": [
+          {
+            "materialTypeId": 1,
+            "materialTypeName": "Single Chair",
+            "quantity": 30,
+            "description": "30 bàn đơn"
+          },
+          {
+            "materialTypeId": 2,
+            "materialTypeName": "Double Table",
+            "quantity": 1,
+            "description": "1 bàn đôi"
+          },
+          {
+            "materialTypeId": 5,
+            "materialTypeName": "TV",
+            "quantity": 1,
+            "description": "1 TV"
+          },
+          {
+            "materialTypeId": 6,
+            "materialTypeName": "White Board",
+            "quantity": 2,
+            "description": "2 bảng"
+          },
+          {
+            "materialTypeId": 7,
+            "materialTypeName": "Speakers",
+            "quantity": 3,
+            "description": "3 loa"
+          },
+          {
+            "materialTypeId": 4,
+            "materialTypeName": "PC",
+            "quantity": 1,
+            "description": "1 máy tính"
+          }
+        ]
+      },
+      {
+        "roomId": "227ae86c-7aa6-4247-9149-0eabb2cbbbdb",
+        "roomNumber": "205",
+        "floor": 2,
+        "capacity": 62,
+        "roomType": "Classroom",
+        "materials": [
+          {
+            "materialTypeId": 2,
+            "materialTypeName": "Double Table",
+            "quantity": 31,
+            "description": "31 bàn đôi"
+          },
+          {
+            "materialTypeId": 5,
+            "materialTypeName": "TV",
+            "quantity": 1,
+            "description": "1 TV"
+          },
+          {
+            "materialTypeId": 6,
+            "materialTypeName": "White Board",
+            "quantity": 2,
+            "description": "2 bảng"
+          },
+          {
+            "materialTypeId": 7,
+            "materialTypeName": "Speakers",
+            "quantity": 3,
+            "description": "3 loa"
+          },
+          {
+            "materialTypeId": 4,
+            "materialTypeName": "PC",
+            "quantity": 1,
+            "description": "1 máy tính"
+          }
+        ]
+      }
+    ],
+    "acData": [
+      {
+        "room": "1:1-01",
+        "status": "unconnectable"
+      },
+      {
+        "room": "1:1-11",
+        "status": "unconnectable"
+      },
+      {
+        "room": "1:1-10",
+        "status": "unconnectable"
+      },
+      {
+        "room": "2:1-04",
+        "status": "off",
+        "temperature": 31.9,
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-05",
+        "status": "off",
+        "temperature": 32.1,
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-06",
+        "status": "on",
+        "temperature": 24.4,
+        "setpoint": 16,
+        "conditional_status": "Cool",
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-07",
+        "status": "on",
+        "temperature": 24.6,
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-08",
+        "status": "off",
+        "temperature": 32.3,
+        "setpoint": 17,
+        "conditional_status": "Cool",
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-09",
+        "status": "off",
+        "temperature": 32.5,
+        "conditional_status": "Cool",
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-12",
+        "status": "off",
+        "temperature": 29.0,
+        "setpoint": 25,
+        "conditional_status": "Cool",
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-13",
+        "status": "off",
+        "temperature": 27.7,
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-14",
+        "status": "used_up_filter",
+        "temperature": 24.3,
+        "setpoint": 16,
+        "conditional_status": "Cool",
+        "fan_weight": "AUTO"
+      },
+      {
+        "room": "2:1-15",
+        "status": "used_up_filter",
+        "temperature": 24.5,
+        "fan_weight": "AUTO"
+      }
+    ],
+    "electricalData": {
+      "daily": [
+        {
+          "timeCheckpoint": "7:00",
+          "block3": 100,
+          "block4_5": 50,
+          "block6": 80,
+          "block8": 120,
+          "block10": 90,
+          "block11": 70
+        },
+        {
+          "timeCheckpoint": "8:00",
+          "block3": 150,
+          "block4_5": 80,
+          "block6": 120,
+          "block8": 200,
+          "block10": 150,
+          "block11": 120
+        },
+        {
+          "timeCheckpoint": "9:00",
+          "block3": 300,
+          "block4_5": 150,
+          "block6": 220,
+          "block8": 450,
+          "block10": 350,
+          "block11": 280
+        },
+        {
+          "timeCheckpoint": "10:00",
+          "block3": 450,
+          "block4_5": 230,
+          "block6": 330,
+          "block8": 650,
+          "block10": 550,
+          "block11": 450
+        },
+        {
+          "timeCheckpoint": "14:00",
+          "block3": 600,
+          "block4_5": 295,
+          "block6": 400,
+          "block8": 800,
+          "block10": 700,
+          "block11": 590
+        },
+        {
+          "timeCheckpoint": "18:00",
+          "block3": 350,
+          "block4_5": 150,
+          "block6": 250,
+          "block8": 500,
+          "block10": 420,
+          "block11": 330
+        }
+      ],
+      "monthly": [
+        {
+          "timeCheckpoint": "Week1",
+          "block3": 58310,
+          "block4_5": 28812,
+          "block6": 31556,
+          "block8": 60368,
+          "block10": 51450,
+          "block11": 43218
+        },
+        {
+          "timeCheckpoint": "Week2",
+          "block3": 60690,
+          "block4_5": 29988,
+          "block6": 32844,
+          "block8": 62832,
+          "block10": 53550,
+          "block11": 44982
+        },
+        {
+          "timeCheckpoint": "Week3",
+          "block3": 56525,
+          "block4_5": 27930,
+          "block6": 30590,
+          "block8": 58520,
+          "block10": 49875,
+          "block11": 41895
+        },
+        {
+          "timeCheckpoint": "Week4",
+          "block3": 62475,
+          "block4_5": 30870,
+          "block6": 33810,
+          "block8": 64680,
+          "block10": 55125,
+          "block11": 46305
+        }
+      ]
+    },
+    "monetaryData": {
+      "block3": {
+        "daily": 190913056,
+        "weekly": 1336391394,
+        "monthly": 5345565578
+      },
+      "block4_5": {
+        "daily": 190520199,
+        "weekly": 1333641394,
+        "monthly": 5334565578
+      },
+      "block6": {
+        "daily": 191627734,
+        "weekly": 1341394142,
+        "monthly": 5365576568
+      },
+      "block8": {
+        "daily": 194877342,
+        "weekly": 1364141394,
+        "monthly": 5456565578
+      },
+      "block10": {
+        "daily": 185774230,
+        "weekly": 1300419615,
+        "monthly": 5201678461
+      },
+      "block11": {
+        "daily": 185231397,
+        "weekly": 1296619783,
+        "monthly": 5186479134
+      }
+    },
+    "consumptionData": {
+      "room101": {
+        "daily": 12.5,
+        "weekly": 87.5,
+        "monthly": 375
+      },
+      "room102": {
+        "daily": 14.2,
+        "weekly": 99.4,
+        "monthly": 426
+      },
+      "room103": {
+        "daily": 10.8,
+        "weekly": 75.6,
+        "monthly": 324
+      },
+      "room104": {
+        "daily": 16.5,
+        "weekly": 115.5,
+        "monthly": 495
+      },
+      "room105": {
+        "daily": 11.7,
+        "weekly": 81.9,
+        "monthly": 351
+      },
+      "room106": {
+        "daily": 13.2,
+        "weekly": 92.4,
+        "monthly": 396
+      },
+      "room107": {
+        "daily": 15.8,
+        "weekly": 110.6,
+        "monthly": 474
+      },
+      "room108": {
+        "daily": 14.6,
+        "weekly": 102.2,
+        "monthly": 438
+      }
+    },
+    "acRankingData": {
+      "daily": [
+        {
+          "label": "Room 101",
+          "hours": 8.5
+        },
+        {
+          "label": "Room 102",
+          "hours": 7.2
+        },
+        {
+          "label": "Room 103",
+          "hours": 9.1
+        },
+        {
+          "label": "Room 104",
+          "hours": 6.8
+        },
+        {
+          "label": "Room 105",
+          "hours": 10.3
+        }
+      ],
+      "monthly": [
+        {
+          "label": "Room 104",
+          "hours": 120
+        },
+        {
+          "label": "Room 101",
+          "hours": 156
+        },
+        {
+          "label": "Room 110",
+          "hours": 148
+        },
+        {
+          "label": "Room 109",
+          "hours": 175
+        },
+        {
+          "label": "Room 105",
+          "hours": 187
+        }
+      ],
+      "yearly": [
+        {
+          "label": "Room 101",
+          "hours": 1850
+        },
+        {
+          "label": "Room 102",
+          "hours": 2340
+        },
+        {
+          "label": "Room 103",
+          "hours": 2560
+        },
+        {
+          "label": "Room 104",
+          "hours": 1920
+        },
+        {
+          "label": "Room 105",
+          "hours": 2150
+        }
+      ]
+    },
+    "roomInUseChart": {
+      "Floor1": [
+        {
+          "type": "inUse",
+          "rooms": 3,
+          "fill": "var(--color-inUse)"
+        },
+        {
+          "type": "vacant",
+          "rooms": 7,
+          "fill": "var(--color-vacant)"
+        }
+      ],
+      "Floor2": [
+        {
+          "type": "inUse",
+          "rooms": 6,
+          "fill": "var(--color-inUse)"
+        },
+        {
+          "type": "vacant",
+          "rooms": 15,
+          "fill": "var(--color-vacant)"
+        }
+      ],
+      "Floor3": [
+        {
+          "type": "inUse",
+          "rooms": 2,
+          "fill": "var(--color-inUse)"
+        },
+        {
+          "type": "vacant",
+          "rooms": 9,
+          "fill": "var(--color-vacant)"
+        }
+      ],
+      "Floor4": [
+        {
+          "type": "inUse",
+          "rooms": 7,
+          "fill": "var(--color-inUse)"
+        },
+        {
+          "type": "vacant",
+          "rooms": 13,
+          "fill": "var(--color-vacant)"
+        }
+      ]
+    },
+    "totalRoomsChart": {
+      "Floor1": [
+        {
+          "type": "small",
+          "rooms": 4,
+          "fill": "var(--color-small)"
+        },
+        {
+          "type": "big",
+          "rooms": 6,
+          "fill": "var(--color-big)"
+        }
+      ],
+      "Floor2": [
+        {
+          "type": "small",
+          "rooms": 21,
+          "fill": "var(--color-small)"
+        },
+        {
+          "type": "big",
+          "rooms": 0,
+          "fill": "var(--color-big)"
+        }
+      ],
+      "Floor3": [
+        {
+          "type": "small",
+          "rooms": 5,
+          "fill": "var(--color-small)"
+        },
+        {
+          "type": "big",
+          "rooms": 6,
+          "fill": "var(--color-big)"
+        }
+      ],
+      "Floor4": [
+        {
+          "type": "small",
+          "rooms": 19,
+          "fill": "var(--color-small)"
+        },
+        {
+          "type": "big",
+          "rooms": 1,
+          "fill": "var(--color-big)"
+        }
+      ]
+    }
+  }
+}

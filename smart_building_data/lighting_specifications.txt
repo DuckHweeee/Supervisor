@@ -1,0 +1,83 @@
+SMART BUILDING LIGHTING SYSTEM SPECIFICATIONS
+
+System Type: LED-based Smart Lighting with IoT Integration
+
+Overview:
+The building features a comprehensive smart lighting system designed for energy efficiency, occupant comfort, and automated control. The system integrates with the building management system (BMS) for centralized monitoring and control.
+
+Hardware Components:
+
+1. LED Light Fixtures:
+   - Model: SmartLED Pro 4000K
+   - Quantity: 2,500 units across all floors
+   - Power consumption: 15W per fixture
+   - Lifespan: 50,000 hours
+   - Dimming capability: 0-100%
+   - Color temperature: Adjustable 2700K-6500K
+
+2. Motion Sensors:
+   - Model: PIR-Smart-360
+   - Coverage: 360° detection, 20-foot radius
+   - Sensitivity: Adjustable (low, medium, high)
+   - Response time: <0.5 seconds
+   - Battery backup: 24 hours
+
+3. Daylight Sensors:
+   - Model: LUX-Monitor-2024
+   - Range: 0-100,000 lux
+   - Accuracy: ±2%
+   - Auto-calibration feature
+   - Integration with window blinds
+
+4. Smart Switches and Dimmers:
+   - Wall-mounted control panels
+   - Mobile app integration
+   - Voice control compatibility
+   - Scheduling capabilities
+
+Control Zones:
+- Zone 1: Lobby and Reception (Floors 1-2)
+- Zone 2: Office Areas (Floors 3-10)
+- Zone 3: Conference Rooms (All floors)
+- Zone 4: Common Areas (Hallways, restrooms)
+- Zone 5: Parking Garage (Basement levels)
+
+Automated Features:
+1. Occupancy-based Control:
+   - Lights turn on when motion detected
+   - Gradual dimming when no motion for 10 minutes
+   - Complete shutdown after 30 minutes of no occupancy
+
+2. Daylight Harvesting:
+   - Automatic adjustment based on natural light levels
+   - Maintains consistent illumination (500 lux for offices)
+   - Reduces energy consumption by up to 40%
+
+3. Circadian Rhythm Lighting:
+   - Color temperature changes throughout the day
+   - Cool white (5000K-6500K) during peak hours
+   - Warm white (2700K-3000K) in evening
+
+Energy Management:
+- Total system power: 37.5 kW
+- Energy savings vs traditional lighting: 60-70%
+- Smart scheduling reduces consumption by additional 25%
+- LED lifespan reduces maintenance costs significantly
+
+Network Configuration:
+- Protocol: Zigbee 3.0 mesh network
+- Gateway: Building Level Controllers (BLC-100)
+- Backup communication: Wi-Fi 6
+- Cloud connectivity for remote monitoring
+
+Maintenance:
+- LED replacement: Every 10-15 years
+- Sensor cleaning: Quarterly
+- Software updates: Automatic via cloud
+- System diagnostics: Continuous monitoring
+
+Performance Metrics:
+- Response time: <1 second for commands
+- Network reliability: 99.9% uptime
+- Energy efficiency: ENERGY STAR certified
+- Light quality: CRI >90 for all fixtures

@@ -1,0 +1,48 @@
+SMART BUILDING AI ASSISTANT - USAGE GUIDE
+
+This AI Assistant can help you manage and get information about your smart building systems.
+
+HOW TO USE:
+
+1. Adding Documents to Knowledge Base:
+   - Place your files in the 'smart_building_data' folder
+   - Supported formats: PDF, DOCX, TXT, CSV, XLSX, JSON
+   - Ask the AI: "Add document smart_building_data/your_file.pdf"
+   - Specify document type: "Add document smart_building_data/manual.pdf as maintenance manual"
+
+2. Searching for Information:
+   - Ask natural language questions about your building
+   - Examples:
+     * "What is the HVAC system maintenance schedule?"
+     * "How do I troubleshoot lighting issues?"
+     * "What are the emergency contact numbers?"
+     * "Show me the temperature sensor specifications"
+
+3. Available Commands:
+   - "files" - Shows all documents in the system
+   - "Add document [path]" - Adds a new document
+   - "Search for [topic]" - Searches the knowledge base
+   - Weather queries for building management
+
+4. Document Types You Can Add:
+   - System manuals (HVAC, lighting, security)
+   - Technical specifications
+   - Maintenance procedures
+   - Emergency protocols
+   - Vendor documentation
+   - Building plans and layouts
+   - Energy efficiency reports
+   - Compliance documents
+
+TIPS:
+- Be specific in your questions for better results
+- Include system names or model numbers when available
+- The AI can analyze data and create visualizations
+- Ask for code examples for building automation tasks
+
+EXAMPLE QUESTIONS:
+- "What are the normal operating parameters for the HVAC system?"
+- "How often should I replace the air filters?"
+- "What's the IP address of the main control unit?"
+- "Create a maintenance schedule chart"
+- "Show me energy consumption data"
