@@ -6,11 +6,19 @@ python-dotenv
 # Document processing
 PyPDF2
 python-docx
+docx2txt
 openpyxl
 pandas
 
 # Vector database for knowledge base
 chromadb
+
+# Web scraping and URL processing
+requests
+beautifulsoup4
+feedparser
+urllib3
+certifi
 
 # Web UI
 streamlit

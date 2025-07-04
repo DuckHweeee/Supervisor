@@ -13,6 +13,14 @@ from datetime import datetime
 import hashlib
 import re
 import asyncio
+import requests
+from bs4 import BeautifulSoup
+import urllib.parse
+import time
+from urllib.robotparser import RobotFileParser
+import feedparser
+import ssl
+import certifi
 
 # Load environment variables from .env file
 load_dotenv()
@@ -160,13 +168,17 @@ def get_current_weather(location, unit="celsius"):
             "message": f"Weather service temporarily unavailable: {str(e)}"
         }, ensure_ascii=False)
 
-# Smart Building Knowledge Base using ChromaDB with simple text search
+# Smart Building Knowledge Base using ChromaDB with simple text search and web training
 class SmartBuildingKnowledgeBase:
     def __init__(self, persist_directory="./knowledge_base"):
         self.client = chromadb.PersistentClient(path=persist_directory)
         self.collection = self.client.get_or_create_collection(
             name="smart_building_docs"
         )
+        self.session = requests.Session()
+        self.session.headers.update({
+            'User-Agent': 'Smart Building AI Assistant/1.0 (Educational Research)'
+        })
         
     def simple_embedding(self, text: str) -> List[float]:
         """Create a simple hash-based embedding for text"""
@@ -233,6 +245,240 @@ class SmartBuildingKnowledgeBase:
             chunks.append(chunk)
             start = end - overlap
         return chunks
+    
+    def can_fetch_url(self, url: str) -> bool:
+        """Check if we can legally fetch from this URL according to robots.txt"""
+        try:
+            parsed_url = urllib.parse.urlparse(url)
+            robots_url = f"{parsed_url.scheme}://{parsed_url.netloc}/robots.txt"
+            
+            rp = RobotFileParser()
+            rp.set_url(robots_url)
+            rp.read()
+            
+            user_agent = self.session.headers.get('User-Agent', '*')
+            return rp.can_fetch(user_agent, url)
+        except Exception:
+            # If we can't check robots.txt, assume we can fetch (be conservative)
+            return True
+    
+    def extract_text_from_url(self, url: str) -> str:
+        """Extract text content from a web URL with improved SSL handling"""
+        try:
+            # Check robots.txt compliance
+            if not self.can_fetch_url(url):
+                return f"Error: Robots.txt disallows fetching from {url}"
+            
+            # Add delay to be respectful
+            time.sleep(1)
+            
+            # Try with SSL verification first
+            try:
+                response = self.session.get(url, timeout=30, verify=True)
+                response.raise_for_status()
+            except requests.exceptions.SSLError as ssl_error:
+                # If SSL verification fails, try without verification but warn user
+                print(f"⚠️ SSL verification failed for {url}. Attempting without SSL verification...")
+                try:
+                    response = self.session.get(url, timeout=30, verify=False)
+                    response.raise_for_status()
+                    print(f"✅ Successfully fetched content from {url} (SSL verification bypassed)")
+                except Exception as fallback_error:
+                    return f"Error: SSL certificate verification failed and fallback also failed for {url}. " \
+                           f"Original SSL error: {str(ssl_error)}. " \
+                           f"Fallback error: {str(fallback_error)}. " \
+                           f"This website may have SSL configuration issues."
+            
+            # Handle different content types
+            content_type = response.headers.get('content-type', '').lower()
+            
+            if 'text/html' in content_type:
+                return self.extract_text_from_html(response.text, url)
+            elif 'application/pdf' in content_type:
+                return f"PDF content from {url} (PDF parsing from URL not implemented yet)"
+            elif 'text/plain' in content_type:
+                return response.text
+            elif 'application/rss+xml' in content_type or 'application/atom+xml' in content_type:
+                return self.extract_text_from_rss(response.text, url)
+            else:
+                return f"Content from {url}:\n{response.text[:2000]}..."
+                
+        except requests.exceptions.RequestException as e:
+            error_msg = str(e)
+            if "SSL" in error_msg or "certificate" in error_msg.lower():
+                return f"Error: SSL/Certificate issue with {url}. " \
+                       f"Details: {error_msg}. " \
+                       f"This website may have SSL configuration problems or require specific certificates."
+            else:
+                return f"Error fetching {url}: {error_msg}"
+        except Exception as e:
+            return f"Error processing {url}: {str(e)}"
+    
+    def extract_text_from_html(self, html_content: str, url: str) -> str:
+        """Extract meaningful text from HTML content"""
+        try:
+            from bs4 import BeautifulSoup
+            
+            soup = BeautifulSoup(html_content, 'html.parser')
+            
+            # Remove script and style elements
+            for script in soup(["script", "style", "nav", "footer", "header", "aside"]):
+                script.decompose()
+            
+            # Extract title
+            title = soup.find('title')
+            title_text = title.get_text() if title else "No title"
+            
+            # Extract main content
+            content_selectors = [
+                'main', 'article', '.content', '.main-content', 
+                '#content', '#main', '.post-content', '.entry-content'
+            ]
+            
+            main_content = None
+            for selector in content_selectors:
+                main_content = soup.select_one(selector)
+                if main_content:
+                    break
+            
+            if not main_content:
+                main_content = soup.find('body') or soup
+            
+            # Extract text
+            text = main_content.get_text(separator='\n', strip=True)
+            
+            # Clean up text
+            lines = [line.strip() for line in text.split('\n') if line.strip()]
+            cleaned_text = '\n'.join(lines)
+            
+            return f"Title: {title_text}\nURL: {url}\n\nContent:\n{cleaned_text}"
+            
+        except ImportError:
+            # Fallback if BeautifulSoup is not available
+            return f"HTML content from {url} (install beautifulsoup4 for better parsing):\n{html_content[:2000]}..."
+        except Exception as e:
+            return f"Error parsing HTML from {url}: {str(e)}"
+    
+    def extract_text_from_rss(self, rss_content: str, url: str) -> str:
+        """Extract text from RSS/Atom feeds"""
+        try:
+            import feedparser
+            
+            feed = feedparser.parse(rss_content)
+            
+            content_parts = [f"RSS Feed: {feed.feed.get('title', 'Unknown')}\nURL: {url}\n"]
+            
+            for entry in feed.entries[:10]:  # Limit to 10 recent entries
+                title = entry.get('title', 'No title')
+                summary = entry.get('summary', entry.get('description', 'No summary'))
+                link = entry.get('link', '')
+                
+                content_parts.append(f"Article: {title}\nLink: {link}\nSummary: {summary}\n")
+            
+            return '\n'.join(content_parts)
+            
+        except ImportError:
+            return f"RSS content from {url} (install feedparser for RSS parsing):\n{rss_content[:1000]}..."
+        except Exception as e:
+            return f"Error parsing RSS from {url}: {str(e)}"
+    
+    def add_url_to_knowledge_base(self, url: str, metadata: Dict[str, Any] = None) -> bool:
+        """Add content from a URL to the knowledge base"""
+        try:
+            print(f"🌐 Fetching content from: {url}")
+            
+            # Extract text from URL
+            text = self.extract_text_from_url(url)
+            
+            if text.startswith("Error"):
+                print(f"❌ {text}")
+                return False
+            
+            if len(text.strip()) < 100:
+                print(f"❌ Insufficient content from {url}")
+                return False
+            
+            # Chunk the text
+            chunks = self.chunk_text(text)
+            
+            # Create embeddings
+            embeddings = [self.simple_embedding(chunk) for chunk in chunks]
+            
+            # Prepare metadata
+            if metadata is None:
+                metadata = {}
+            
+            parsed_url = urllib.parse.urlparse(url)
+            domain = parsed_url.netloc
+            
+            base_metadata = {
+                "source_url": url,
+                "domain": domain,
+                "source_type": "web_content",
+                "added_date": datetime.now().isoformat(),
+                **metadata
+            }
+            
+            # Generate unique IDs for chunks
+            url_hash = hashlib.md5(url.encode()).hexdigest()[:8]
+            chunk_ids = [f"web_{url_hash}_{i}" for i in range(len(chunks))]
+            chunk_metadata = [
+                {**base_metadata, "chunk_index": i, "chunk_id": chunk_ids[i]}
+                for i in range(len(chunks))
+            ]
+            
+            # Add to collection
+            self.collection.add(
+                embeddings=embeddings,
+                documents=chunks,
+                metadatas=chunk_metadata,
+                ids=chunk_ids
+            )
+            
+            print(f"✅ Successfully added {len(chunks)} chunks from {url}")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Error adding URL {url}: {str(e)}")
+            return False
+    
+    def train_from_url_list(self, urls: List[str], category: str = "web_training") -> Dict[str, Any]:
+        """Train the knowledge base from a list of URLs"""
+        results = {
+            "successful": 0,
+            "failed": 0,
+            "total_chunks": 0,
+            "errors": []
+        }
+        
+        print(f"🌐 Starting web training from {len(urls)} URLs...")
+        
+        for i, url in enumerate(urls, 1):
+            print(f"\n📄 Processing URL {i}/{len(urls)}: {url}")
+            
+            try:
+                success = self.add_url_to_knowledge_base(url, {"category": category})
+                if success:
+                    results["successful"] += 1
+                    # Count chunks added
+                    collection_info = self.collection.get()
+                    current_chunks = len([m for m in collection_info['metadatas'] if m.get('source_url') == url])
+                    results["total_chunks"] += current_chunks
+                else:
+                    results["failed"] += 1
+                    results["errors"].append(f"Failed to process {url}")
+                    
+            except Exception as e:
+                results["failed"] += 1
+                results["errors"].append(f"Error with {url}: {str(e)}")
+                print(f"❌ Error processing {url}: {e}")
+        
+        print(f"\n📊 Web Training Complete!")
+        print(f"✅ Successful: {results['successful']}")
+        print(f"❌ Failed: {results['failed']}")
+        print(f"📄 Total chunks added: {results['total_chunks']}")
+        
+        return results
     
     def add_document(self, file_path: str, metadata: Dict[str, Any] = None) -> bool:
         """Add a document to the knowledge base"""
@@ -342,7 +588,7 @@ class SmartBuildingKnowledgeBase:
     
     def get_context_for_query(self, query: str, max_context_length: int = 4000) -> str:
         """Get relevant context for a query and synthesize it into actionable information"""
-        search_results = self.search_documents(query, n_results=10)
+        search_results = self.search_documents(query, n_results=15)
         
         if not search_results:
             return ""
@@ -350,52 +596,219 @@ class SmartBuildingKnowledgeBase:
         # Categorize and synthesize information based on query type
         query_lower = query.lower()
         
-        # Extract and categorize relevant information
+        # Extract and categorize relevant information with expanded categories
         hvac_info = []
         lighting_info = []
         energy_info = []
         safety_info = []
+        room_info = []
+        equipment_info = []
+        maintenance_info = []
+        security_info = []
+        automation_info = []
+        environmental_info = []
+        cost_info = []
+        web_content_info = []  # Specifically for web-sourced content
         general_info = []
         
+        # Analyze search results and extract relevant information
         for result in search_results:
-            content = result['content'].lower()
+            content = result['content']
+            content_lower = content.lower()
+            metadata = result.get('metadata', {})
             
-            # Categorize based on content type
-            if any(term in content for term in ['hvac', 'heating', 'cooling', 'ventilation', 'temperature', 'thermostat']):
-                hvac_info.append(content)
-            elif any(term in content for term in ['lighting', 'led', 'bulb', 'illumination', 'brightness']):
-                lighting_info.append(content)
-            elif any(term in content for term in ['energy', 'power', 'consumption', 'efficiency', 'kwh']):
-                energy_info.append(content)
-            elif any(term in content for term in ['safety', 'security', 'fire', 'emergency', 'alarm']):
-                safety_info.append(content)
+            # Check if this is web-sourced content
+            is_web_content = metadata.get('source_type') == 'web_content' or metadata.get('source_url')
+            
+            # If it's web content, prioritize it and extract key information
+            if is_web_content:
+                web_content_info.append({
+                    'content': content,
+                    'url': metadata.get('source_url', 'Unknown URL'),
+                    'domain': metadata.get('domain', 'Unknown domain'),
+                    'category': metadata.get('category', 'web_content')
+                })
+            
+            # Categorize based on content type - expanded categories
+            if any(term in content_lower for term in ['hvac', 'heating', 'cooling', 'ventilation', 'temperature', 'thermostat', 'ac', 'air conditioning', 'climate']):
+                hvac_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['lighting', 'led', 'bulb', 'illumination', 'brightness', 'light', 'lamp']):
+                lighting_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['energy', 'power', 'consumption', 'efficiency', 'kwh', 'electricity', 'electrical', 'meter']):
+                energy_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['safety', 'fire', 'emergency', 'alarm', 'smoke', 'detector', 'co2']):
+                safety_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['security', 'camera', 'lock', 'access', 'motion', 'surveillance']):
+                security_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['room', 'floor', 'classroom', 'capacity', 'space']):
+                room_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['equipment', 'device', 'sensor', 'monitor', 'controller']):
+                equipment_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['maintenance', 'repair', 'service', 'technician', 'install']):
+                maintenance_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['automation', 'smart', 'control', 'system', 'iot']):
+                automation_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['environmental', 'air quality', 'humidity', 'moisture', 'leak']):
+                environmental_info.append({'content': content, 'metadata': metadata})
+            elif any(term in content_lower for term in ['cost', 'budget', 'money', 'expense', 'financial', 'savings']):
+                cost_info.append({'content': content, 'metadata': metadata})
             else:
-                general_info.append(content)
+                general_info.append({'content': content, 'metadata': metadata})
         
-        # Generate synthesized response based on query context
+        # Generate comprehensive synthesized response based on query context
         synthesized_info = []
         
-        if any(term in query_lower for term in ['hvac', 'heating', 'cooling', 'temperature']):
-            if hvac_info:
-                synthesized_info.append("HVAC System Guidelines: Temperature control systems should maintain 68-72°F for optimal comfort and energy efficiency.")
+        # If web content is available, prioritize it in the response
+        if web_content_info:
+            web_info = self.extract_specific_info_from_web_content(web_content_info, query)
+            if web_info:
+                synthesized_info.append("🌐 **Web Sources Information:**")
+                synthesized_info.append(web_info)
         
-        if any(term in query_lower for term in ['lighting', 'lights', 'illumination']):
-            if lighting_info:
-                synthesized_info.append("Lighting Recommendations: LED systems provide 80% energy savings and should be dimmed based on natural light availability.")
+        # HVAC and Climate Control
+        if any(term in query_lower for term in ['hvac', 'heating', 'cooling', 'temperature', 'thermostat', 'ac', 'air conditioning', 'climate']):
+            synthesized_info.append("🌡️ **HVAC System Guidelines:** Optimal temperature range is 68-72°F (20-22°C) for comfort and energy efficiency. Smart thermostats can reduce energy consumption by 15-25% through automated scheduling and weather-based adjustments.")
         
-        if any(term in query_lower for term in ['energy', 'power', 'efficiency']):
-            if energy_info:
-                synthesized_info.append("Energy Efficiency: Smart scheduling and automated controls can reduce building energy consumption by 20-30%.")
+        # Lighting Systems
+        if any(term in query_lower for term in ['lighting', 'lights', 'illumination', 'led', 'bulb', 'brightness']):
+            synthesized_info.append("💡 **Lighting Recommendations:** LED systems provide 80% energy savings compared to traditional lighting. Use daylight sensors and occupancy controls for optimal efficiency. Natural light integration can reduce artificial lighting needs by 50-80%.")
         
-        if any(term in query_lower for term in ['safety', 'security', 'emergency']):
-            if safety_info:
-                synthesized_info.append("Safety Protocols: Emergency systems should be tested monthly and all exits must remain clearly marked and accessible.")
+        # Energy Management
+        if any(term in query_lower for term in ['energy', 'power', 'efficiency', 'consumption', 'electricity', 'kwh']):
+            synthesized_info.append("⚡ **Energy Efficiency:** Smart scheduling and automated controls can reduce building energy consumption by 20-30%. Monitor peak usage times and implement load balancing. Weather-responsive systems optimize energy use automatically.")
+        
+        # Safety Systems
+        if any(term in query_lower for term in ['safety', 'fire', 'emergency', 'smoke', 'detector', 'alarm', 'co2']):
+            synthesized_info.append("🚨 **Safety Protocols:** Fire safety systems require monthly testing. Smoke detectors should be inspected quarterly. Emergency exits must remain clearly marked and accessible. CO2 monitoring ensures air quality.")
+        
+        # Security Systems
+        if any(term in query_lower for term in ['security', 'camera', 'lock', 'access', 'surveillance', 'motion']):
+            synthesized_info.append("🔒 **Security Management:** Access control systems should be integrated with occupancy tracking. Motion detectors and cameras require regular maintenance and firmware updates. Implement layered security with multiple detection methods.")
+        
+        # Room and Space Management
+        if any(term in query_lower for term in ['room', 'floor', 'classroom', 'capacity', 'space', 'occupancy']):
+            synthesized_info.append("🏢 **Room Management:** Optimize space utilization through occupancy sensors and booking systems. Standard classrooms accommodate 30-62 students with appropriate AV equipment. Track utilization rates for efficient space planning.")
+        
+        # Equipment and Devices
+        if any(term in query_lower for term in ['equipment', 'device', 'sensor', 'monitor', 'controller', 'smart']):
+            synthesized_info.append("🔧 **Equipment Management:** IoT devices require regular firmware updates and network connectivity checks. Implement predictive maintenance schedules for optimal performance. Monitor device status for proactive maintenance.")
+        
+        # Maintenance and Service
+        if any(term in query_lower for term in ['maintenance', 'repair', 'service', 'technician', 'install', 'filter']):
+            synthesized_info.append("🛠️ **Maintenance Protocols:** Establish preventive maintenance schedules. HVAC filters should be replaced every 3-6 months. Document all service activities. Use predictive maintenance to prevent equipment failures.")
+        
+        # Building Automation
+        if any(term in query_lower for term in ['automation', 'smart', 'control', 'system', 'iot', 'integration']):
+            synthesized_info.append("🤖 **Building Automation:** Integrate all systems for centralized control. Use IoT sensors for real-time monitoring and automated responses to environmental changes. Implement smart scheduling for optimal efficiency.")
+        
+        # Environmental Monitoring
+        if any(term in query_lower for term in ['environmental', 'air quality', 'humidity', 'moisture', 'leak', 'water']):
+            synthesized_info.append("🌿 **Environmental Monitoring:** Maintain humidity levels between 30-50% for comfort. Use air quality sensors to monitor CO2 levels and ensure proper ventilation. Implement leak detection systems for water damage prevention.")
+        
+        # Cost and Budget Management
+        if any(term in query_lower for term in ['cost', 'budget', 'money', 'expense', 'financial', 'savings']):
+            synthesized_info.append("💰 **Cost Management:** Energy-efficient systems can reduce operational costs by 25-40%. Implement smart scheduling to minimize peak demand charges. Weather-responsive controls optimize energy spending.")
+        
+        # Building Information and General Management
+        if any(term in query_lower for term in ['building', 'name', 'location', 'floors', 'rooms', 'information', 'overview']):
+            synthesized_info.append("🏢 **Building Information:** The building management system provides comprehensive control over all building operations. Implement integrated monitoring for optimal performance across all systems.")
+        
+        # AI and Machine Learning Integration
+        if any(term in query_lower for term in ['ai', 'machine learning', 'ml', 'neural network', 'algorithm', 'prediction', 'analytics']):
+            synthesized_info.append("🤖 **AI & Machine Learning:** Implement predictive analytics for equipment failure prediction, energy consumption forecasting, and occupancy pattern analysis. Use computer vision for people counting and neural networks for system optimization.")
+        
+        # Cybersecurity and Privacy
+        if any(term in query_lower for term in ['cybersecurity', 'security', 'privacy', 'encryption', 'hack', 'cyber', 'vulnerability']):
+            synthesized_info.append("🔒 **Cybersecurity & Privacy:** Implement zero-trust architecture, encrypt all data transmissions, regularly update IoT device firmware, and conduct vulnerability assessments. Ensure compliance with data protection regulations.")
+        
+        # Digital Twins and Simulation
+        if any(term in query_lower for term in ['digital twin', 'simulation', 'model', 'virtual', 'twin', 'digital model']):
+            synthesized_info.append("📊 **Digital Twins & Simulation:** Create virtual building models for performance optimization, predictive maintenance, and scenario testing. Use real-time sensor data to validate and update digital twin accuracy.")
+        
+        # Retrofit and Modernization
+        if any(term in query_lower for term in ['retrofit', 'modernization', 'upgrade', 'renovation', 'legacy', 'old system']):
+            synthesized_info.append("🔧 **Retrofit & Modernization:** Prioritize upgrades based on ROI analysis, integrate new technology with existing systems, and plan phased implementations to minimize disruption. Consider energy efficiency incentives and rebates.")
+        
+        # Regulatory Compliance
+        if any(term in query_lower for term in ['regulation', 'compliance', 'code', 'standard', 'permit', 'inspection', 'ada', 'osha']):
+            synthesized_info.append("📋 **Regulatory Compliance:** Ensure adherence to building codes, ADA accessibility requirements, fire safety standards, and environmental regulations. Maintain proper documentation and schedule regular inspections.")
+        
+        # Performance Benchmarking
+        if any(term in query_lower for term in ['benchmark', 'performance', 'kpi', 'metrics', 'comparison', 'standard', 'rating']):
+            synthesized_info.append("📈 **Performance Benchmarking:** Track energy use intensity (EUI), compare against industry standards, monitor occupant satisfaction scores, and implement continuous improvement strategies. Use ENERGY STAR Portfolio Manager for benchmarking.")
+        
+        # Emergency Preparedness
+        if any(term in query_lower for term in ['emergency', 'disaster', 'crisis', 'backup', 'resilience', 'continuity', 'evacuation']):
+            synthesized_info.append("🚨 **Emergency Preparedness:** Develop comprehensive emergency response plans, maintain backup systems, conduct regular drills, and ensure clear communication protocols. Implement redundant systems for critical operations.")
+        
+        # Occupant Wellness and Experience
+        if any(term in query_lower for term in ['wellness', 'comfort', 'satisfaction', 'occupant', 'experience', 'productivity', 'health']):
+            synthesized_info.append("😌 **Occupant Wellness:** Optimize indoor air quality (CO2 <800 ppm), maintain comfortable temperature (68-72°F), provide adequate lighting (300-500 lux), and implement noise control measures. Use biophilic design elements.")
+        
+        # Advanced Analytics and Predictive Maintenance
+        if any(term in query_lower for term in ['predictive', 'analytics', 'forecast', 'trend', 'pattern', 'anomaly', 'detection']):
+            synthesized_info.append("🔮 **Predictive Analytics:** Implement machine learning algorithms for failure prediction, energy forecasting, and anomaly detection. Use historical data to identify patterns and optimize maintenance schedules proactively.")
         
         # If no specific category matches, provide general building management advice
         if not synthesized_info and (hvac_info or lighting_info or energy_info or general_info):
-            synthesized_info.append("Building Management: Regular maintenance schedules, automated controls, and energy monitoring are essential for optimal building performance.")
+            synthesized_info.append("🏢 **Building Management:** Implement comprehensive building automation systems with regular maintenance schedules, energy monitoring, and automated controls for optimal performance and efficiency.")
         
         return "\n".join(synthesized_info) if synthesized_info else ""
+    
+    def extract_specific_info_from_web_content(self, web_content_info: List[Dict], query: str) -> str:
+        """Extract specific information from web content based on the query"""
+        if not web_content_info:
+            return ""
+        
+        extracted_info = []
+        query_lower = query.lower()
+        
+        for web_item in web_content_info:
+            content = web_item['content']
+            url = web_item['url']
+            domain = web_item['domain']
+            
+            # Extract key sentences that are most relevant to the query
+            sentences = content.split('.')
+            relevant_sentences = []
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if len(sentence) > 20:  # Ignore very short sentences
+                    sentence_lower = sentence.lower()
+                    
+                    # Check if sentence contains query terms
+                    query_words = query_lower.split()
+                    matches = sum(1 for word in query_words if word in sentence_lower)
+                    
+                    if matches > 0:
+                        relevant_sentences.append(sentence)
+            
+            # If we found relevant sentences, format them nicely
+            if relevant_sentences:
+                # Take the most relevant sentences (up to 3)
+                top_sentences = relevant_sentences[:3]
+                
+                extracted_info.append({
+                    'url': url,
+                    'domain': domain,
+                    'key_info': top_sentences
+                })
+        
+        # Format the extracted information
+        if extracted_info:
+            formatted_info = []
+            for item in extracted_info:
+                domain_name = item['domain'].replace('www.', '')
+                formatted_info.append(f"📄 **From {domain_name}:**")
+                for info in item['key_info']:
+                    formatted_info.append(f"   • {info}")
+                formatted_info.append(f"   🔗 Source: {item['url']}")
+                formatted_info.append("")
+            
+            return "\n".join(formatted_info)
+        
+        return ""
 
 # Initialize Knowledge Base
 kb = SmartBuildingKnowledgeBase()
@@ -437,6 +850,105 @@ def add_document_to_kb(file_path: str, document_type: str = "general") -> str:
     else:
         return f"Failed to add document: {Path(file_path).name}"
 
+def add_url_to_kb(url: str, category: str = "web_content") -> str:
+    """Add content from a URL to the smart building knowledge base"""
+    metadata = {
+        "document_type": "web_content",
+        "category": category,
+        "building_system": "smart_building"
+    }
+    
+    success = kb.add_url_to_knowledge_base(url, metadata)
+    if success:
+        return f"Successfully added content from: {url}"
+    else:
+        return f"Failed to add content from: {url}"
+
+def train_from_building_websites(urls: List[str] = None) -> str:
+    """Train the AI from building management and smart building websites"""
+    
+    if urls is None:
+        # Default list of authoritative building management websites
+        urls = [
+            "https://www.ashrae.org/technical-resources/standards-and-guidelines",
+            "https://www.usgbc.org/leed",
+            "https://www.energystar.gov/buildings",
+            "https://www.buildinggreennyc.com/best-practices",
+            "https://www.facilitiesnet.com/hvac",
+            "https://www.buildings.com/hvac",
+            "https://www.automatedbuildings.com",
+            "https://www.intelligentbuildings.com",
+            "https://www.smartbuildingsmagazine.com"
+        ]
+    
+    print(f"🌐 Training AI from {len(urls)} building management websites...")
+    
+    results = kb.train_from_url_list(urls, "building_management_websites")
+    
+    response = f"""🎓 Web Training Results:
+    
+📊 **Training Summary:**
+• URLs Processed: {results['successful'] + results['failed']}
+• Successful: {results['successful']}
+• Failed: {results['failed']}
+• Total Content Chunks: {results['total_chunks']}
+
+✅ **Knowledge Enhanced:** The AI now has access to content from authoritative building management websites including ASHRAE standards, LEED guidelines, ENERGY STAR resources, and smart building best practices.
+
+🔍 **New Capabilities:** The AI can now answer questions about:
+• Industry standards and guidelines
+• Green building certifications
+• HVAC best practices from experts
+• Smart building technologies
+• Energy efficiency standards
+• Building automation trends"""
+
+    if results['errors']:
+        response += f"\n\n⚠️ **Errors Encountered:**\n" + "\n".join(results['errors'][:5])
+    
+    return response
+
+def get_web_training_suggestions() -> str:
+    """Get suggestions for URLs to train the AI with building knowledge"""
+    suggestions = """🌐 **Recommended Training URLs for Smart Building AI:**
+
+🏢 **Building Standards & Guidelines:**
+• https://www.ashrae.org - HVAC industry standards
+• https://www.usgbc.org - Green building and LEED certification
+• https://www.energystar.gov - Energy efficiency guidelines
+• https://www.iea.org - International energy efficiency best practices
+
+🤖 **Smart Building Technologies:**
+• https://www.automatedbuildings.com - Building automation insights
+• https://www.intelligentbuildings.com - Smart building technologies
+• https://www.smartbuildingsmagazine.com - Industry trends and case studies
+• https://www.bacnet.org - Building automation protocols
+
+🔧 **HVAC & Systems:**
+• https://www.facilitiesnet.com/hvac - HVAC maintenance and optimization
+• https://www.buildings.com - Building systems and management
+• https://www.contractingbusiness.com - HVAC best practices
+• https://www.achr-news.com - Air conditioning and refrigeration
+
+💡 **Energy & Sustainability:**
+• https://www.greenbiz.com - Sustainable building practices
+• https://www.buildinggreen.com - Environmental building strategies
+• https://www.nrel.gov - Renewable energy and efficiency research
+• https://www.epa.gov/energy - Environmental energy guidelines
+
+📚 **Usage Examples:**
+• add_url_to_kb("https://www.ashrae.org/standards", "hvac_standards")
+• train_from_building_websites() - Uses default authoritative sources
+• train_from_building_websites(["your_custom_urls"]) - Custom training
+
+⚠️ **Important Notes:**
+• URLs must be publicly accessible
+• Content must be related to building management
+• Training respects robots.txt and rate limits
+• Large websites may take time to process"""
+    
+    return suggestions
+
 def search_building_knowledge(query: str) -> str:
     """Search the smart building knowledge base and provide actionable recommendations"""
     context = kb.get_context_for_query(query)
@@ -449,18 +961,27 @@ def search_building_knowledge(query: str) -> str:
     recommendations = []
     
     if any(term in query_lower for term in ['temperature', 'heating', 'cooling', 'hvac']):
-        recommendations.append("💡 Recommendation: Consider adjusting HVAC settings based on current weather conditions for optimal comfort and energy efficiency.")
+        recommendations.append("💡 **Related:** Check temperature settings, maintenance schedules, and filter replacement procedures")
     
     if any(term in query_lower for term in ['lighting', 'lights']):
-        recommendations.append("💡 Recommendation: Use natural light sensors to automatically adjust indoor lighting throughout the day.")
+        recommendations.append("💡 **Related:** Review LED specifications, motion sensor settings, and energy efficiency measures")
     
     if any(term in query_lower for term in ['energy', 'power']):
-        recommendations.append("💡 Recommendation: Implement smart scheduling to reduce energy consumption during peak hours.")
+        recommendations.append("💡 **Related:** Consider weather-based optimization and consumption monitoring")
+    
+    if any(term in query_lower for term in ['security', 'access control', 'surveillance']):
+        recommendations.append("💡 **Related:** Check camera placements, recording settings, and alarm configurations")
+    
+    if any(term in query_lower for term in ['maintenance', 'repair', 'service']):
+        recommendations.append("💡 **Related:** Review service logs, maintenance schedules, and equipment warranties")
+    
+    if any(term in query_lower for term in ['automation', 'smart building', 'iot']):
+        recommendations.append("💡 **Related:** Explore automation opportunities for energy savings and enhanced comfort")
     
     # Combine context with recommendations
     response = f"{context}"
     if recommendations:
-        response += f"\n\n{' '.join(recommendations)}"
+        response += f"\n\n{recommendations[0]}"
     
     return response
 
@@ -640,6 +1161,26 @@ def weather_forecast(
 
 # Register Smart Building tools
 @user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Add content from a URL to the smart building knowledge base for AI training.")
+def add_web_content(
+    url: Annotated[str, "URL to extract content from (must be publicly accessible)"],
+    category: Annotated[str, "Category for the content (e.g., 'hvac_standards', 'energy_efficiency', 'building_automation')"] = "web_content"
+) -> str:
+    return add_url_to_kb(url, category)
+
+@user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Train the AI from authoritative building management websites to enhance knowledge.")
+def train_from_web(
+    custom_urls: Annotated[List[str], "Optional list of custom URLs to train from. If not provided, uses default authoritative building websites."] = None
+) -> str:
+    return train_from_building_websites(custom_urls)
+
+@user_proxy.register_for_execution()
+@assistant.register_for_llm(description="Get recommendations for URLs and websites to train the AI with building management knowledge.")
+def get_training_url_suggestions() -> str:
+    return get_web_training_suggestions()
+
+@user_proxy.register_for_execution()
 @assistant.register_for_llm(description="Add a document to the smart building knowledge base.")
 def add_building_document(
     file_path: Annotated[str, "Path to the document file"],
@@ -672,9 +1213,9 @@ def search_building_info(
     elif 'energy' in query_lower:
         suggestions.append("💡 **Related:** Consider weather-based optimization and consumption monitoring")
     elif 'security' in query_lower:
-        suggestions.append("💡 **Related:** Check access control systems and surveillance equipment")
+        suggestions.append("💡 **Related:** Check camera placements, recording settings, and alarm configurations")
     elif 'maintenance' in query_lower:
-        suggestions.append("💡 **Related:** Review preventive maintenance schedules and equipment specifications")
+        suggestions.append("💡 **Related:** Review service logs, maintenance schedules, and equipment warranties")
     
     if suggestions:
         formatted_response += f"\n\n{suggestions[0]}"
@@ -911,3 +1452,61 @@ def analyze_building_weather_impact(
         response_parts.append(f"⚠️ **Analysis Error:** Unable to process weather data - {str(e)}")
     
     return "\n".join(response_parts)
+
+def extract_specific_info_from_web_content(self, web_content_info: List[Dict], query: str) -> str:
+        """Extract specific information from web content based on the query"""
+        if not web_content_info:
+            return ""
+        
+        extracted_info = []
+        query_lower = query.lower()
+        
+        for web_item in web_content_info:
+            content = web_item['content']
+            url = web_item['url']
+            domain = web_item['domain']
+            
+            # Extract key sentences that are most relevant to the query
+            sentences = content.split('.')
+            relevant_sentences = []
+            
+            for sentence in sentences:
+                sentence = sentence.strip()
+                if len(sentence) > 20:  # Ignore very short sentences
+                    sentence_lower = sentence.lower()
+                    
+                    # Check if sentence contains query terms
+                    query_words = query_lower.split()
+                    matches = sum(1 for word in query_words if word in sentence_lower)
+                    
+                    if matches > 0:
+                        relevant_sentences.append(sentence)
+            
+            # If we found relevant sentences, format them nicely
+            if relevant_sentences:
+                # Take the most relevant sentences (up to 3)
+                top_sentences = relevant_sentences[:3]
+                
+                extracted_info.append({
+                    'url': url,
+                    'domain': domain,
+                    'key_info': top_sentences
+                })
+        
+        # Format the extracted information
+        if extracted_info:
+            formatted_info = []
+            for item in extracted_info:
+                domain_name = item['domain'].replace('www.', '')
+                formatted_info.append(f"📄 **From {domain_name}:**")
+                for info in item['key_info']:
+                    formatted_info.append(f"   • {info}")
+                formatted_info.append(f"   🔗 Source: {item['url']}")
+                formatted_info.append("")
+            
+            return "\n".join(formatted_info)
+        
+        return ""
+
+# Initialize Knowledge Base
+kb = SmartBuildingKnowledgeBase()
