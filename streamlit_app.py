@@ -6,7 +6,8 @@ from typing import Annotated, List, Dict, Any
 from dotenv import load_dotenv
 from autogen import AssistantAgent, UserProxyAgent
 from autogen.coding import LocalCommandLineCodeExecutor
-import chromadb
+# Import ChromaDB compatibility wrapper to handle SQLite issues
+from chromadb_compat import create_chromadb_instance
 import PyPDF2
 import docx2txt
 import pandas as pd
@@ -208,42 +209,10 @@ def get_current_weather_old(location, unit="fahrenheit"):
 # Smart Building Knowledge Base class with web content support
 class SmartBuildingKnowledgeBase:
     def __init__(self, persist_directory="./knowledge_base"):
-        self.client = None
-        self.collection = None
-        self.use_fallback = False
-        self.fallback_storage = {}  # In-memory fallback storage
+        # Use the compatibility wrapper for ChromaDB
+        self.chromadb_wrapper = create_chromadb_instance(persist_directory)
+        self.use_fallback = self.chromadb_wrapper.use_fallback
         
-        try:
-            # Try to initialize ChromaDB with SQLite compatibility fixes
-            import sys
-            import os
-            
-            # Fix for SQLite version compatibility on deployment platforms
-            if hasattr(sys, 'modules') and 'sqlite3' in sys.modules:
-                import sqlite3
-                if hasattr(sqlite3, 'version_info') and sqlite3.version_info < (3, 35, 0):
-                    try:
-                        # Try to use pysqlite3-binary if available
-                        import pysqlite3
-                        sys.modules['sqlite3'] = pysqlite3
-                        import chromadb
-                    except ImportError:
-                        # Fall back to in-memory storage
-                        self.use_fallback = True
-                        st.warning("⚠️ Using in-memory storage due to SQLite compatibility issues")
-            
-            if not self.use_fallback:
-                self.client = chromadb.PersistentClient(path=persist_directory)
-                self.collection = self.client.get_or_create_collection(
-                    name="smart_building_docs"
-                )
-                
-        except Exception as e:
-            # If ChromaDB initialization fails, use fallback storage
-            self.use_fallback = True
-            st.warning(f"⚠️ ChromaDB initialization failed: {str(e)}")
-            st.info("📝 Using in-memory storage as fallback")
-            
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': 'Smart Building AI Assistant/1.0 (Educational Research)'
@@ -342,22 +311,13 @@ class SmartBuildingKnowledgeBase:
                 for i in range(len(chunks))
             ]
             
-            if self.use_fallback:
-                # Use fallback in-memory storage
-                for i, chunk in enumerate(chunks):
-                    self.fallback_storage[chunk_ids[i]] = {
-                        'document': chunk,
-                        'metadata': chunk_metadata[i],
-                        'embedding': embeddings[i]
-                    }
-            else:
-                # Use ChromaDB
-                self.collection.add(
-                    embeddings=embeddings,
-                    documents=chunks,
-                    metadatas=chunk_metadata,
-                    ids=chunk_ids
-                )
+            # Use the ChromaDB compatibility wrapper
+            self.chromadb_wrapper.add_documents(
+                documents=chunks,
+                metadatas=chunk_metadata,
+                ids=chunk_ids,
+                embeddings=embeddings
+            )
             
             return True
             
@@ -370,66 +330,23 @@ class SmartBuildingKnowledgeBase:
         try:
             query_embedding = [self.simple_embedding(query)]
             
-            if self.use_fallback:
-                # Use fallback in-memory storage
-                search_results = []
-                query_words = set(query.lower().split())
-                
-                # Calculate similarity for each document in fallback storage
-                for doc_id, doc_data in self.fallback_storage.items():
-                    doc_words = set(doc_data['document'].lower().split())
-                    overlap = len(query_words.intersection(doc_words))
-                    if overlap > 0:
-                        search_results.append({
-                            "content": doc_data['document'],
-                            "metadata": doc_data['metadata'],
-                            "distance": 1.0 - (overlap / len(query_words))
-                        })
-                
-                # Sort by distance (lower is better) and return top results
-                search_results.sort(key=lambda x: x['distance'])
-                return search_results[:n_results]
-            else:
-                # Use ChromaDB
-                results = self.collection.query(
-                    query_embeddings=query_embedding,
-                    n_results=n_results
-                )
-                
-                if not results['documents'][0]:
-                    all_docs = self.collection.get()
-                    text_results = []
-                    query_words = set(query.lower().split())
-                    
-                    for i, doc in enumerate(all_docs['documents']):
-                        doc_words = set(doc.lower().split())
-                        overlap = len(query_words.intersection(doc_words))
-                        if overlap > 0:
-                            text_results.append({
-                                'document': doc,
-                                'metadata': all_docs['metadatas'][i],
-                                'score': overlap
-                            })
-                    
-                    text_results.sort(key=lambda x: x['score'], reverse=True)
-                    search_results = []
-                    for result in text_results[:n_results]:
-                        search_results.append({
-                            "content": result['document'],
-                            "metadata": result['metadata'],
-                            "distance": 1.0 - (result['score'] / len(query_words))
-                        })
-                    return search_results
-                
-                search_results = []
+            # Use the ChromaDB compatibility wrapper
+            results = self.chromadb_wrapper.query_documents(
+                query_embeddings=query_embedding,
+                n_results=n_results
+            )
+            
+            # Convert results to our expected format
+            search_results = []
+            if results['documents'][0]:
                 for i in range(len(results['documents'][0])):
                     search_results.append({
                         "content": results['documents'][0][i],
                         "metadata": results['metadatas'][0][i],
-                        "distance": results['distances'][0][i] if 'distances' in results else None
+                        "distance": results['distances'][0][i] if 'distances' in results else 0.5
                     })
-                
-                return search_results
+            
+            return search_results
             
         except Exception as e:
             st.error(f"Error searching documents: {str(e)}")
@@ -785,22 +702,13 @@ class SmartBuildingKnowledgeBase:
             ]
             
             # Add to collection
-            if self.use_fallback:
-                # Use fallback in-memory storage
-                for i, chunk in enumerate(chunks):
-                    self.fallback_storage[chunk_ids[i]] = {
-                        'document': chunk,
-                        'metadata': chunk_metadata[i],
-                        'embedding': embeddings[i]
-                    }
-            else:
-                # Use ChromaDB
-                self.collection.add(
-                    embeddings=embeddings,
-                    documents=chunks,
-                    metadatas=chunk_metadata,
-                    ids=chunk_ids
-                )
+            # Use the ChromaDB compatibility wrapper
+            self.chromadb_wrapper.add_documents(
+                documents=chunks,
+                metadatas=chunk_metadata,
+                ids=chunk_ids,
+                embeddings=embeddings
+            )
             
             st.success(f"✅ Successfully added {len(chunks)} chunks from {url}")
             return True
@@ -836,11 +744,7 @@ class SmartBuildingKnowledgeBase:
         
         # Count total chunks
         try:
-            if self.use_fallback:
-                results["total_chunks"] = len(self.fallback_storage)
-            else:
-                collection_info = self.collection.get()
-                results["total_chunks"] = len(collection_info.get('documents', []))
+            results["total_chunks"] = self.chromadb_wrapper.count_documents()
         except Exception as e:
             results["errors"].append(f"Error counting chunks: {str(e)}")
         
@@ -884,23 +788,13 @@ class SmartBuildingKnowledgeBase:
                         for i in range(len(chunks))
                     ]
                     
-                    # Add to collection
-                    if self.use_fallback:
-                        # Use fallback in-memory storage
-                        for i, chunk in enumerate(chunks):
-                            self.fallback_storage[chunk_ids[i]] = {
-                                'document': chunk,
-                                'metadata': chunk_metadata[i],
-                                'embedding': embeddings[i]
-                            }
-                    else:
-                        # Use ChromaDB
-                        self.collection.add(
-                            embeddings=embeddings,
-                            documents=chunks,
-                            metadatas=chunk_metadata,
-                            ids=chunk_ids
-                        )
+                    # Add to collection using the compatibility wrapper
+                    self.chromadb_wrapper.add_documents(
+                        documents=chunks,
+                        metadatas=chunk_metadata,
+                        ids=chunk_ids,
+                        embeddings=embeddings
+                    )
                     
                     processed_chunks += len(chunks)
             
