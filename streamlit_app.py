@@ -23,6 +23,7 @@ import feedparser
 import ssl
 import certifi
 import asyncio
+import httpx
 
 # Load environment variables from .env file
 load_dotenv()
@@ -82,8 +83,6 @@ class WeatherAPIClient:
     async def get_weather_data(self, location: str, include_forecast: bool = False) -> Dict[str, Any]:
         """Get weather data from the API server"""
         try:
-            import httpx
-            
             # Create httpx client if not exists
             if self.client is None:
                 self.client = httpx.AsyncClient(timeout=30.0)

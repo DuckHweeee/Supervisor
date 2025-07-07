@@ -34,5 +34,5 @@ uvicorn>=0.23.0
 pydantic>=2.0.0
 
 # Additional utility packages
-rich>=13.0.0
-typing-extensions>=4.0.0
+rich>=13.0.0  # For better terminal output
+typing-extensions>=4.0.0  # For enhanced type hints
