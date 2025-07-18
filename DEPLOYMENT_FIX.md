@@ -10,7 +10,7 @@ File "/mount/src/supervisor/streamlit_app.py", line 7, in <module>
     from autogen import AssistantAgent, UserProxyAgent
 ```
 
-**Root Cause:** Incorrect package specification in requirements.txt. The file was trying to install `autogen-agentchat` instead of the correct `pyautogen` package.
+**Root Cause:** Incorrect package specification in requirements.txt. The file was trying to install `autogen-agentchat` instead of the correct `ag2` package.
 
 ### 2. ChromaDB SQLite Error (NEW ISSUE)
 ```
@@ -23,7 +23,7 @@ RuntimeError: Your system has an unsupported version of sqlite3. Chroma requires
 
 ### 1. AutoGen Package Fix
 1. **Fixed the requirements.txt files:**
-   - Changed `autogen-agentchat>=0.6.0` to `pyautogen>=0.2.0`
+   - Changed `autogen-agentchat>=0.6.0` to `ag2>=0.2.0`
    - Updated both `requirements.txt` and `requirements_fixed.txt`
 
 2. **Verified correct imports:**
@@ -49,11 +49,11 @@ Modify the app to gracefully handle ChromaDB initialization failures.
 
 ## For Future Deployments
 1. Use `requirements.txt` or `requirements_fixed.txt` (both are now correct)
-2. Ensure `pyautogen>=0.2.0` is specified, not `autogen-agentchat`
+2. Ensure `ag2>=0.2.0` is specified, not `autogen-agentchat`
 3. Test imports locally before deployment using `python test_import.py`
 
 ## Key Packages
-- `pyautogen>=0.2.0` - The correct AutoGen package
+- `ag2>=0.2.0` - The correct AutoGen package
 - `streamlit>=1.40.0` - For the web interface
 - `chromadb>=1.0.0` - For the knowledge base
 - `pysqlite3-binary>=0.5.0` - SQLite compatibility fix for ChromaDB
